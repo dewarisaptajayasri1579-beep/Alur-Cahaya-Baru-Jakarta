@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alur Sistem Cahaya Baru</title>
+    <!-- Font Outfit untuk kesan Futuristik, Inter untuk keterbacaan (Clean) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Palette: Clean Light Mode */
+            --bg-base: #f4f7f6; 
+            --bg-gradient: radial-gradient(circle at top right, #ffffff 0%, #eef2f3 100%);
+            
+            --accent-glow: #0284c7; /* Sky Blue/Cyan */
+            --accent-glow-dim: rgba(2, 132, 199, 0.2);
+            
+            --text-main: #1e293b;
+            --text-muted: #475569;
+            
+            /* Sharp Glassmorphism Light */
+            --glass-bg: rgba(255, 255, 255, 0.6);
+            --glass-bg-active: rgba(255, 255, 255, 0.95);
+            --glass-border: 1px solid rgba(0, 0, 0, 0.06);
+            --glass-border-active: 1px solid rgba(2, 132, 199, 0.4);
+            --glass-blur: blur(20px);
+            --glass-shadow: 0 10px 30px -10px rgba(0,0,0,0.08);
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg-gradient);
+            background-color: var(--bg-base);
+            background-attachment: fixed;
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            font-weight: 300;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 50px 20px;
+            overflow-x: hidden;
+        }
+
+        /* Subtle ambient light from behind */
+        .ambient-light {
+            position: fixed;
+            top: 20%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80vw;
+            height: 80vh;
+            background: radial-gradient(circle, rgba(0,240,255,0.05) 0%, transparent 60%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 2.8rem;
+            margin-bottom: 5px;
+            text-align: center;
+            color: var(--text-main);
+            letter-spacing: -0.5px;
+            text-shadow: none;
+        }
+        
+        /* Sleek accent line under title */
+        .title-accent {
+            width: 60px;
+            height: 3px;
+            background: var(--accent-glow);
+            margin: 15px auto 20px auto;
+            border-radius: 2px;
+            box-shadow: 0 0 15px var(--accent-glow-dim);
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            margin-bottom: 50px;
+            text-align: center;
+            font-size: 1.05rem;
+            max-width: 600px;
+        }
+
+        .section-title {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 500;
+            font-size: 1.3rem;
+            color: var(--text-main);
+            width: 100%;
+            max-width: 1100px;
+            margin-bottom: 25px;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .section-title::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: var(--accent-glow);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent-glow-dim);
+        }
+
+        .timeline-container {
+            display: flex;
+            align-items: stretch;
+            justify-content: space-between;
+            gap: 15px;
+            width: 100%;
+            max-width: 1100px;
+            padding-bottom: 20px;
+            position: relative;
+        }
+
+        /* Connecting sleek line */
+        .timeline-line {
+            position: absolute;
+            top: 50%;
+            left: 40px;
+            right: 40px;
+            height: 1px;
+            background: rgba(255,255,255,0.1);
+            z-index: 0;
+        }
+
+        /* Clean Glass Menus */
+        .timeline-step {
+            flex: 1;
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: var(--glass-border);
+            border-radius: 16px;
+            padding: 25px 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+            box-shadow: var(--glass-shadow);
+        }
+
+        .timeline-step:hover {
+            background: rgba(255,255,255,0.8);
+            transform: translateY(-5px);
+            border-color: rgba(0,0,0,0.1);
+        }
+
+        /* Active Menu - Futuristic Glowing */
+        .timeline-step.active {
+            background: var(--glass-bg-active);
+            border: var(--glass-border-active);
+            box-shadow: 0 10px 25px rgba(2, 132, 199, 0.15), inset 0 0 10px rgba(2, 132, 199, 0.05);
+            transform: translateY(-5px);
+        }
+
+        .step-icon {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            opacity: 0.7;
+            transition: all 0.3s ease;
+            filter: grayscale(0.5);
+        }
+        
+        .timeline-step.active .step-icon {
+            opacity: 1;
+            filter: grayscale(0);
+            transform: scale(1.1);
+        }
+
+        .step-name {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 500;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            transition: all 0.3s ease;
+        }
+        
+        .timeline-step.active .step-name {
+            color: var(--accent-glow);
+            text-shadow: 0 0 10px var(--accent-glow-dim);
+        }
+
+        .detail-panel-container {
+            width: 100%;
+            max-width: 1100px;
+            margin-top: 35px;
+            min-height: 200px;
+        }
+
+        /* Clean Glass Panel for Details */
+        .detail-panel {
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: var(--glass-border);
+            border-top: 1px solid rgba(255,255,255,0.8);
+            border-radius: 20px;
+            box-shadow: var(--glass-shadow);
+            padding: 40px;
+            display: none; 
+            animation: fadeUp 0.4s ease forwards;
+        }
+
+        .detail-panel.active {
+            display: block;
+        }
+
+        .detail-title {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 500;
+            font-size: 1.8rem;
+            color: var(--text-main);
+            margin-bottom: 35px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+            padding-bottom: 15px;
+        }
+
+        /* Proportional, Clean Table */
+        .detail-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .detail-table th, .detail-table td {
+            padding: 20px 0;
+            text-align: left;
+            vertical-align: top;
+            border-bottom: 1px solid rgba(0,0,0,0.04);
+        }
+        
+        .detail-table tr:last-child th, .detail-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .detail-table th {
+            width: 25%;
+            color: var(--accent-glow);
+            font-family: 'Outfit', sans-serif;
+            font-weight: 500;
+            font-size: 0.95rem;
+            padding-right: 20px;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-table td {
+            color: var(--text-muted);
+            font-size: 1rem;
+            line-height: 1.7;
+        }
+
+        .detail-table td strong, .detail-table td i {
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        .detail-table td ul {
+            padding-left: 20px;
+            margin-top: 8px;
+            list-style-type: circle;
+        }
+        
+        .detail-table td ul li {
+            margin-bottom: 8px;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .system-notes {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(2, 132, 199, 0.15);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+        .system-notes h3 {
+            color: var(--cyan);
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 1.5rem;
+        }
+        .notes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .note-card {
+            background: rgba(255, 255, 255, 0.6);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+        }
+        .note-card h4 {
+            color: var(--text-main);
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding-bottom: 10px;
+        }
+        .note-card ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            color: var(--light-text);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        .note-card ul li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 10px;
+        }
+        .note-card ul li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--cyan);
+        }
+        .phase-two-container {
+            max-width: 1200px;
+            margin: 60px auto;
+            padding: 40px;
+            background: linear-gradient(135deg, rgba(255, 240, 245, 0.8) 0%, rgba(255, 250, 250, 0.9) 100%);
+            border: 1px solid rgba(255, 0, 128, 0.15);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(255, 0, 128, 0.05);
+        }
+        .phase-title {
+            font-size: 1.5rem;
+            color: var(--text-main);
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        .phase-title span {
+            color: #d81b60;
+            margin-right: 10px;
+        }
+        .phase-desc {
+            color: var(--light-text);
+            font-size: 1rem;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+        /* ===== PREMIUM FEATURE HIGHLIGHT ===== */
+        tr.premium-feature {
+            background: linear-gradient(90deg, rgba(255, 140, 0, 0.08) 0%, rgba(255, 200, 0, 0.02) 100%);
+        }
+        tr.premium-feature th {
+            color: #d97706 !important;
+            border-left: 4px solid #f59e0b;
+            padding-left: 15px !important;
+        }
+        tr.premium-feature th::before {
+            content: "★ ";
+            color: #f59e0b;
+            font-size: 0.8rem;
+            margin-right: 4px;
+        }
+        .premium-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #fff;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 20px;
+            margin-top: 6px;
+            vertical-align: middle;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            box-shadow: 0 2px 5px rgba(245, 158, 11, 0.2);
+        }
+        .note-card.premium-card {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(255, 255, 255, 0.5) 100%);
+            border: 1px solid rgba(245, 158, 11, 0.3) !important;
+        }
+        .note-card.premium-card h4 {
+            color: #d97706 !important;
+            border-bottom-color: rgba(245, 158, 11, 0.2) !important;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="ambient-light"></div>
+
+    <h1>Alur Sistem Cahaya Baru</h1>
+    <div class="title-accent"></div>
+    <p class="subtitle">Platform operasional dan manajemen terintegrasi dengan teknologi <i>Glassmorphism</i>.</p>
+
+    <h2 class="section-title">Aplikasi Internal (Tahap 1)</h2>
+    
+    <div class="timeline-container">
+        <div class="timeline-line"></div>
+        
+        <div class="timeline-step active" onclick="showDetail(1, this)">
+            <span class="step-icon">📦</span>
+            <div class="step-name">1. Stok</div>
+        </div>
+        
+        <div class="timeline-step" onclick="showDetail(2, this)">
+            <span class="step-icon">🛒</span>
+            <div class="step-name">2. Pembelian</div>
+        </div>
+
+        <div class="timeline-step" onclick="showDetail(3, this)">
+            <span class="step-icon">📤</span>
+            <div class="step-name">3. Penjualan</div>
+        </div>
+
+        <div class="timeline-step" onclick="showDetail(4, this)">
+            <span class="step-icon">⚙️</span>
+            <div class="step-name">4. Kas dan Bank</div>
+        </div>
+
+        <div class="timeline-step" onclick="showDetail(5, this)">
+            <span class="step-icon">📈</span>
+            <div class="step-name">5. Analisa Strategis</div>
+        </div>
+
+        <div class="timeline-step" onclick="showDetail(6, this)">
+            <span class="step-icon">📑</span>
+            <div class="step-name">6. Migrasi Eksternal</div>
+        </div>
+    </div>
+
+    <!-- Detail Panels -->
+    <div class="detail-panel-container">
+        
+        <!-- Detail 1 -->
+        <div id="detail-1" class="detail-panel active">
+            <h2 class="detail-title">Stok</h2>
+            <table class="detail-table">
+                <tbody>
+                    <tr>
+                        <th>Import Data</th>
+                        <td>Data Master Stok akan di-import langsung dari <strong>Sistem Lama</strong>.</td>
+                    </tr>
+                    <tr>
+                        <th>Pembagian Kategori</th>
+                        <td>
+                            Inventaris dipisahkan ke dalam dua kelompok utama:
+                            <ul>
+                                <li><strong>Stok Ikan & Biota:</strong> Memiliki 3 kategori utama (<i>Marine Fish, Invertebrate, Coral</i>).</li>
+                                <li><strong>Stok <i>Packing</i>:</strong> Mengelola inventaris material pengemasan.</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Pengkodean Stok</th>
+                        <td>Mengidentifikasi Divisi secara otomatis berdasarkan Kategori Utama Barang.</td>
+                    </tr>
+                    <tr>
+                        <th>Perhitungan HPP</th>
+                        <td>Menggunakan sistem <i>Average Cost</i>.</td>
+                    </tr>
+                    <tr>
+                        <th>Kematian Ikan (DOA)</th>
+                        <td>Saat pengiriman dihitung masuk ke dalam <strong>Charge</strong> (bukan sebagai barang retur).</td>
+                    </tr>
+                    <tr>
+                        <th>Mode Transisi (<i>By-Pass</i>)</th>
+                        <td>Fitur opsional yang mengizinkan <i>Upload</i> Penjualan berjalan tanpa memotong stok <i>real-time</i> (solusi fase awal adaptasi Jakarta).</td>
+                    </tr>
+                    <tr>
+                        <th>Stok Opname Akhir Bulan</th>
+                        <td>Mencocokkan jumlah fisik stok sekaligus menjadi <i>trigger</i> otomatis penentuan Harga Pokok Penjualan (HPP) jika memakai Mode Transisi.</td>
+                    </tr>
+                    <tr class="premium-feature">
+                        <th>Notifikasi Stok Kritis <span class="premium-badge">Premium</span></th>
+                        <td>Sistem mengirim <strong>peringatan otomatis</strong> kepada manajer jika kuantitas biota/ikan tertentu turun di bawah ambang batas minimum yang ditetapkan. Tidak ada lagi kasus kehabisan barang saat order datang.</td>
+                    </tr>
+                    <tr>
+                        <th>Laporan Stok</th>
+                        <td>
+                            Fitur pencetakan laporan yang dilengkapi parameter pencarian/<i>filter</i> berdasarkan:
+                            <ul>
+                                <li>Kategori Barang (Divisi)</li>
+                                <li><i>Supplier</i> (Asal ikan)</li>
+                                <li>Periode Waktu (Bulanan)</li>
+                            </ul>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Detail 2 -->
+        <div id="detail-2" class="detail-panel">
+            <h2 class="detail-title">Pembelian</h2>
+            <table class="detail-table">
+                <tbody>
+                    <tr>
+                        <th>Jenis Pembelian</th>
+                        <td>Memisahkan secara jelas pencatatan antara <strong>Pembelian Stok Ikan/Biota</strong> dengan <strong>Pembelian Stok <i>Packing</i></strong>.</td>
+                    </tr>
+                    <tr>
+                        <th>Harga Referensi</th>
+                        <td>Berdasarkan riwayat harga beli setiap barang per <i>Supplier</i>.</td>
+                    </tr>
+                    <tr>
+                        <th>Supplier Lokal</th>
+                        <td>Fokus pencatatan barang yang dipasok secara domestik oleh pengepul.</td>
+                    </tr>
+                    <tr>
+                        <th>Penambah Stok</th>
+                        <td>Transaksi pembelian otomatis meng-<i>update</i> penambahan kuantitas di modul Stok.</td>
+                    </tr>
+                    <tr>
+                        <th>Termin & Uang Muka</th>
+                        <td>Mengakomodasi skema transaksi mulai dari lunas hingga cicilan/Uang Muka (DP) kepada <i>supplier</i>.</td>
+                    </tr>
+                    <tr>
+                        <th>Pembayaran Hutang</th>
+                        <td>Melacak sisa tagihan/hutang (AP) sekaligus mengeksekusi proses pelunasan pembayarannya ke <i>supplier</i>.</td>
+                    </tr>
+                    <tr>
+                        <th>Laporan Pembelian</th>
+                        <td>Menyajikan rekapitulasi data transaksi pembelian secara menyeluruh.</td>
+                    </tr>
+                    <tr>
+                        <th>Laporan Hutang & Histori</th>
+                        <td>Menampilkan rincian saldo hutang <i>supplier</i> beserta rekam jejak (histori) riwayat transaksinya.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Detail 3 -->
+        <div id="detail-3" class="detail-panel">
+            <h2 class="detail-title">Penjualan</h2>
+            <table class="detail-table">
+                <tbody>
+                    <tr>
+                        <th>Input Data (Upload Excel)</th>
+                        <td>Mengeksekusi data <i>packing list</i> dari sistem lama dengan format rincian: <strong>per box, per barang, per qty, beserta informasi <i>sub-order</i></strong> untuk diterbitkan menjadi <i>Invoice</i>.</td>
+                    </tr>
+                    <tr>
+                        <th>Struktur Tagihan per Divisi</th>
+                        <td>Kalkulasi <i>invoice</i> dipecah secara mendetail ke dalam sub-divisi (<i>Marine Fish, Invertebrate, Freshwater</i>).</td>
+                    </tr>
+                    <tr>
+                        <th>Harga Jual & Diskon</th>
+                        <td>Secara <i>default</i> mengambil <strong>Harga Jual Terakhir per <i>Customer</i></strong>, dengan fitur diskon yang memotong <i>Live Stock Value</i>.</td>
+                    </tr>
+                    <tr>
+                        <th>Formula Biaya Tambahan</th>
+                        <td>Sistem dilengkapi kalkulator otomatis (Kuantitas x <i>Rate</i>) untuk menghitung besaran biaya <i>Packing</i> dan <i>Freight Incentive</i>.</td>
+                    </tr>
+                    <tr>
+                        <th>Alokasi Biaya CITES</th>
+                        <td>Pembebanan biaya dokumen khusus (sertifikat CITES) yang bisa diarahkan spesifik ke divisi tertentu (seperti <i>Invertebrates</i>).</td>
+                    </tr>
+                    <tr>
+                        <th>Manajemen Klaim (DOA)</th>
+                        <td>Kompensasi kematian ikan saat tiba (DOA) dicatat per divisi dan langsung memotong nilai total tagihan <i>invoice</i> terkait.</td>
+                    </tr>
+                    <tr>
+                        <th>Multi-Currency & Kurs</th>
+                        <td>Mendukung transaksi mata uang asing (USD) yang otomatis dikonversi ke IDR berdasarkan <i>Kurs Harian</i> per transaksi.</td>
+                    </tr>
+                    <tr>
+                        <th>Penjualan Lokal</th>
+                        <td>Mendukung transaksi penjualan reguler domestik (dalam Rupiah) tanpa perlu melalui kerumitan alur ekspor.</td>
+                    </tr>
+                    <tr>
+                        <th>Laporan Penjualan</th>
+                        <td>
+                            Kumpulan pelaporan analitik yang mencakup:
+                            <ul>
+                                <li><i>Monthly Shipment Report</i> & Penjualan per Divisi.</li>
+                                <li>Laporan Tagihan/Piutang (USD/IDR) & Histori Pembayaran.</li>
+                                <li>Laporan <i>Margin Freight</i> (Selisih profit kargo).</li>
+                                <li>Laporan Klaim Kematian (DOA) & Riwayat Harga <i>Customer</i>.</li>
+                            </ul>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Detail 4 -->
+        <div id="detail-4" class="detail-panel">
+            <h2 class="detail-title">Kas dan Bank</h2>
+            <table class="detail-table">
+                <tbody>
+                    <tr>
+                        <th>Pondasi COA Bertingkat</th>
+                        <td>Penyusunan <i>Chart of Accounts</i> (COA) secara berlapis (Kas Induk -> Bank -> Rekening spesifik) sebagai fondasi pembukuan.</td>
+                    </tr>
+                    <tr>
+                        <th>Eksekusi Hutang Piutang</th>
+                        <td>Pintu utama untuk memproses pembayaran hutang <i>supplier</i> (Pembelian) dan penerimaan pelunasan piutang <i>customer</i> (Penjualan).</td>
+                    </tr>
+                    <tr>
+                        <th>Pencatatan Selisih Kurs</th>
+                        <td>Menghitung dan menjurnal secara otomatis Laba/Rugi Selisih Kurs saat pembayaran <i>Invoice</i> mata uang asing dilunasi.</td>
+                    </tr>
+                    <tr>
+                        <th>Jurnal Penyesuaian HPP</th>
+                        <td>Fasilitas <i>Closing HPP</i> otomatis di akhir bulan berdasarkan data <i>Stok Opname</i> (menjaga Neraca tetap <i>balance</i> tanpa perlu potong stok harian).</td>
+                    </tr>
+                    <tr>
+                        <th>Biaya Operasional & Kas Bon</th>
+                        <td>Mencatat pengeluaran harian (konsumsi, pakan) serta <strong>Kas Bon Karyawan</strong>. Biaya umum (<i>freight</i>) dialokasikan proporsional antar divisi.</td>
+                    </tr>
+                    <tr>
+                        <th>Lampiran Bukti Digital</th>
+                        <td>Kewajiban <i>upload/scan</i> bukti transfer atau nota fisik untuk setiap transaksi guna membentuk "lemari arsip digital" (Cloud).</td>
+                    </tr>
+                    <tr>
+                        <th><i>Posting & Locking</i></th>
+                        <td>Alur keamanan: Input -> Preview -> Posting. Laporan bulanan dapat di-<i>lock</i> final dan hanya bisa di-<i>unlock</i> oleh otoritas manajemen tertinggi.</td>
+                    </tr>
+                    <tr class="premium-feature">
+                        <th>Digital Approval Bertingkat <span class="premium-badge">Premium</span></th>
+                        <td>Pengeluaran Kas Bon atau Pembelian di atas nilai tertentu <strong>tidak dapat di-Posting</strong> sebelum mendapatkan persetujuan digital (<i>approve</i>) dari Manajer atau Owner. Kontrol penuh ada di ujung jari.</td>
+                    </tr>
+                    <tr>
+                        <th>Pelaporan Kas Bank</th>
+                        <td>
+                            Menyajikan pelaporan akuntansi mendetail:
+                            <ul>
+                                <li><strong>Laba Rugi (P&L):</strong> Format PL-01 (Rincian) dan PL-SUM (Ringkasan).</li>
+                                <li><strong>Neraca (Balance Sheet):</strong> Format BS-01 dan BS-02.</li>
+                                <li><strong>Buku Kas / Mutasi Bank:</strong> Riwayat uang masuk & keluar harian.</li>
+                                <li><strong>Laporan Kas Bon:</strong> Rekapitulasi pinjaman & sisa cicilan/potongan karyawan.</li>
+                            </ul>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Detail 5 -->
+        <div id="detail-5" class="detail-panel">
+            <h2 class="detail-title">Analisa Strategis (BI)</h2>
+            <table class="detail-table">
+                <tbody>
+                    <tr>
+                        <th>Analisa Profitabilitas Divisi</th>
+                        <td>Membandingkan <i>Revenue</i> (Penjualan) vs <i>Cost</i> (HPP Stok & Beban Operasional) per divisi. Menjawab: "Divisi mana penyumbang laba terbesar?".</td>
+                    </tr>
+                    <tr>
+                        <th>Analisa Kualitas <i>Supplier</i></th>
+                        <td>Mengkorelasikan data Pembelian dengan data Klaim Kematian (DOA) di Penjualan. Menjawab: "Supplier mana yang ikannya paling sering mati saat diekspor?".</td>
+                    </tr>
+                    <tr>
+                        <th>Analisa <i>Margin Freight</i></th>
+                        <td>Memantau selisih biaya kargo asli vs tagihan ke <i>Customer</i>. Menjawab: "Apakah kita mencetak untung atau rugi dari manipulasi margin kargo?".</td>
+                    </tr>
+                    <tr>
+                        <th>Analisa Kesehatan Arus Kas</th>
+                        <td>Mengkorelasikan jatuh tempo Hutang (AP) dan Piutang (AR). Menjawab: "Apakah bulan depan kita punya cukup uang kas untuk membayar <i>Supplier</i> lokal?".</td>
+                    </tr>
+                    <tr>
+                        <th>Analisa Perputaran Stok (<i>Aging</i>)</th>
+                        <td>Menganalisa usia stok di tangki. Menjawab: "Ikan/koral jenis apa yang paling lambat terjual dan menghabiskan biaya pemeliharaan tinggi?".</td>
+                    </tr>
+                    <tr>
+                        <th>Analisa Fluktuasi Harga</th>
+                        <td>Membandingkan tren harga beli pengepul lokal vs tren harga jual ekspor. Menjawab: "Kapan momen terbaik menekan harga ke supplier lokal?".</td>
+                    </tr>
+                    <tr class="premium-feature">
+                        <th>🚨 Early Warning System (EWS) <span class="premium-badge">Premium</span></th>
+                        <td><strong>Dashboard notifikasi otomatis</strong> yang aktif jika: Hutang <i>Supplier</i> mendekati jatuh tempo (3 hari), Piutang <i>Customer</i> melewati jatuh tempo, atau lonjakan klaim DOA melebihi batas normal bulan ini.</td>
+                    </tr>
+                    <tr class="premium-feature">
+                        <th>📊 AR/AP Aging Dashboard <span class="premium-badge">Premium</span></th>
+                        <td>Visualisasi umur Piutang dan Hutang secara tabel berjenjang: <strong>0-30 hari, 31-60 hari, 61-90 hari, 90+ hari</strong>. Identifikasi klien bermasalah sebelum piutang menjadi macet.</td>
+                    </tr>
+                    <tr class="premium-feature">
+                        <th>📱 Owner Dashboard (One-Page) <span class="premium-badge">Premium</span></th>
+                        <td>Satu halaman ringkasan eksekutif khusus Owner: <strong>Kas Hari Ini, Total Piutang Belum Lunas, Omzet Bulan Ini, Top 5 Customer</strong>. Kondisi bisnis terbaca hanya dalam 5 detik.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Detail 6 -->
+        <div id="detail-6" class="detail-panel">
+            <h2 class="detail-title">Migrasi Data Eksternal (Pajak)</h2>
+            <table class="detail-table">
+                <tbody>
+                    <tr>
+                        <th>Filter Validasi Transaksi</th>
+                        <td>Fitur bagi <i>Accounting</i> untuk memilah transaksi spesifik (Pembelian, Penjualan, Kas Masuk/Keluar) yang layak dan valid untuk dilaporkan ke pihak luar.</td>
+                    </tr>
+                    <tr>
+                        <th>Pemisahan <i>Database</i> (Keamanan)</th>
+                        <td>Data transaksi yang terpilih akan dikirim (migrasi) ke <i>database</i> dan <i>server</i> aplikasi yang berbeda secara fisik untuk mencegah kebocoran data internal perusahaan.</td>
+                    </tr>
+                    <tr>
+                        <th>Konsolidasi Laporan Eksternal</th>
+                        <td>Transaksi yang berhasil dimigrasi akan membentuk laporan keuangan khusus yang disesuaikan murni untuk kebutuhan pelaporan Pajak atau otoritas eksternal (Pak Tony).</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- Catatan Tambahan (Fitur Lain yang belum masuk 6 Alur Utama) -->
+    <div class="system-notes">
+        <h3>Fitur Pendukung & Arsitektur Sistem</h3>
+        <div class="notes-grid">
+            <div class="note-card">
+                <h4>👤 HR & Absensi (Modul Tambahan)</h4>
+                <ul>
+                    <li>Sistem absensi berbasis GPS dengan batas radius yang bisa diatur oleh HR.</li>
+                    <li>Mengakomodasi jam kerja melintasi pergantian hari khusus karyawan <i>shift</i> malam (tim <i>packing</i>).</li>
+                    <li>Sistem kalkulasi upah <i>packing</i> borongan (Total box dibagi jumlah orang yang hadir).</li>
+                </ul>
+            </div>
+            <div class="note-card">
+                <h4>⭐ KPI & Performa Customer</h4>
+                <ul>
+                    <li>Pemeringkatan otomatis (<i>Ranking Customer</i>) untuk menilai performa klien berdasarkan riwayat ketepatan waktu pelunasan pembayaran piutang mereka.</li>
+                </ul>
+            </div>
+            <div class="note-card">
+                <h4>🖥️ Standar UI/UX & Pelaporan</h4>
+                <ul>
+                    <li><strong>Cetak Bukti Transaksi:</strong> Setiap transaksi dari hulu ke hilir wajib dilengkapi tombol <i>Preview</i> dan <i>Print</i> (Cetak Nota).</li>
+                    <li><strong>Fleksibilitas Laporan:</strong> Seluruh laporan di dalam sistem dapat ditarik dengan fitur <strong>Export ke Excel</strong>.</li>
+                    <li><strong>Ramah Pengguna (Awam):</strong> Antarmuka intuitif. Mempercepat input data menggunakan tombol <strong>Enter</strong> untuk berpindah kolom secara instan.</li>
+                    <li><strong>Arsitektur Pintar:</strong> Pemisahan Server Aplikasi dan Server <i>Storage</i> (Cloud), serta navigasi interaktif dengan fitur <i>drill-down</i>.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="note-card premium-card">
+            <h4>🕵️ Audit Trail & Anti-Fraud System</h4>
+            <ul>
+                <li>Setiap perubahan data merekam secara permanen: <strong>Siapa (User), Jam, IP Komputer, Nilai Sebelum vs Sesudah</strong>.</li>
+                <li>Log ini tidak dapat dihapus bahkan oleh Admin, menjadi bukti digital yang sah jika terjadi manipulasi.</li>
+            </ul>
+        </div>
+        <div class="note-card premium-card">
+            <h4>👥 Multi-User & Role Permission</h4>
+            <ul>
+                <li>Setiap staf hanya dapat mengakses menu dan data sesuai perannya: Kasir, Gudang, Akunting, Manajer, atau Owner.</li>
+                <li>Mencegah kebocoran data sensitif (margin keuntungan, gaji, dll.) ke pihak yang tidak berwenang.</li>
+            </ul>
+        </div>
+    </div>
+    </div>
+    
+    <!-- Tahap 2: Aplikasi Eksternal -->
+    <div class="phase-two-container">
+        <h2 class="phase-title"><span>●</span> Aplikasi Eksternal (Tahap 2: Laporan Pajak / Pak Tony)</h2>
+        <p class="phase-desc">Sistem pembukuan terpisah (Beda Server & Database) yang bersifat pasif, hanya menerima data yang sudah divalidasi dari Aplikasi Internal untuk keperluan audit pajak dan otoritas eksternal.</p>
+        
+        <div class="notes-grid" style="margin-top: 30px;">
+            <div class="note-card" style="border-color: rgba(255, 0, 128, 0.3);">
+                <h4 style="color: #ff0080; border-bottom-color: rgba(255,0,128,0.2);">🛡️ Gateway 1-Arah (Sync)</h4>
+                <ul>
+                    <li>Tidak memiliki <i>form input</i> transaksi harian.</li>
+                    <li>Menerima <i>push data</i> murni 100% dari hasil filter Aplikasi Internal (Modul 6).</li>
+                    <li>Mencegah duplikasi ganda atau manipulasi data secara sepihak.</li>
+                </ul>
+            </div>
+            <div class="note-card" style="border-color: rgba(255, 0, 128, 0.3);">
+                <h4 style="color: #ff0080; border-bottom-color: rgba(255,0,128,0.2);">⚖️ Koreksi Fiskal (Tax Adj)</h4>
+                <ul>
+                    <li>Fasilitas bagi <i>Accounting</i> untuk melakukan penyesuaian nilai buku secara legal.</li>
+                    <li>Mampu menolkan pengeluaran yang tidak diakui negara (<i>Non-deductible expense</i>) tanpa merusak catatan data riil.</li>
+                </ul>
+            </div>
+            <div class="note-card" style="border-color: rgba(255, 0, 128, 0.3);">
+                <h4 style="color: #ff0080; border-bottom-color: rgba(255,0,128,0.2);">📊 Ekspor & Dashboard Pajak</h4>
+                <ul>
+                    <li>Tampilan akhir berupa <strong>Neraca Fiskal</strong> dan <strong>Laba Rugi (P&L) Fiskal</strong> yang "bersih".</li>
+                    <li>Fitur <i>Generate & Export</i> data ke format (CSV/Excel) untuk di-<i>upload</i> ke <i>software</i> e-Faktur/e-SPT pajak pemerintah.</li>
+                </ul>
+            </div>
+            <div class="note-card" style="border-color: rgba(255, 0, 128, 0.3);">
+                <h4 style="color: #ff0080; border-bottom-color: rgba(255,0,128,0.2);">🔗 Konsolidasi Cabang (Denpasar)</h4>
+                <ul>
+                    <li><strong>Jalur Transisi (Upload Excel):</strong> Fasilitas untuk meng-<i>upload</i> data mentah/laporan dari CB Denpasar agar digabung (konsolidasi) dengan data CB Jakarta.</li>
+                    <li><strong>Jalur Darurat (Manual Entry):</strong> <i>Form Jurnal Manual</i> bagi akuntan untuk mengetik angka ringkasan Denpasar jika data digitalnya belum siap.</li>
+                    <li><strong>Jalur Masa Depan (API Sync):</strong> Tarik data otomatis antar server jika sistem CB Denpasar sudah 100% siap.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showDetail(stepId, element) {
+            const steps = document.querySelectorAll('.timeline-step');
+            steps.forEach(step => step.classList.remove('active'));
+
+            element.classList.add('active');
+
+            const panels = document.querySelectorAll('.detail-panel');
+            panels.forEach(panel => panel.classList.remove('active'));
+
+            const selectedPanel = document.getElementById('detail-' + stepId);
+            if(selectedPanel) {
+                selectedPanel.classList.add('active');
+            }
+        }
+    </script>
+</body>
+</html>
